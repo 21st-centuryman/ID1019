@@ -1,0 +1,75 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+\begin{document}
+
+\title{
+    \textbf{Elixir: Getting Started}
+}
+\author{Alexander Berg}
+\date{Spring Term 2022}
+
+\maketitle
+
+\section*{Introduction}
+
+For this first assignment in Programming II, the author was tasked with exploring, solving, and discussing basic Elixir programming using the LaTex Software System. This paper is split into 5 sections, each explaining and building upon knowledge obtained by the author during the process of this assignment.
+
+\section*{Iex and the Elixir interactive shell}
+
+In this first task, the author was told to understand some basic functionality of the Elixir interactive shell (iex), and make it run some commands, such as the following:
+
+\begin{minted}{elixir}
+> 6 / 2
+  3
+> h()
+  # List of commands and other useful help
+\end{minted}
+
+\section*{A First Program}
+
+For the second task, the author was told to check that the basic compiling and Elixir was functional, by creating a simple test.ex file:
+
+\begin{minted}{elixir}
+ def double(x) do
+   x * 2
+ end
+\end{minted}
+
+This is a simple function that doubles the input, x. Notice the unique syntax in this example (and in Elixir in general), each function is defined only by the keyword {\tt "def"} and its tasks are initialized and terminated with the key words {\tt do .. end}. 
+
+\section*{Recursive definitions}
+
+Recursion rather than loops is used in the Elixir language. The benefits of which is a discussion for another time. The code showing an example of which is shown below:
+
+\begin{minted}{elixir}
+  def product(m, n) do
+    case m do
+      0 -> 0
+      m -> n + product(m-1,n)
+  end
+\end{minted}
+
+Here the author uses a case statement to find the product of two values through recursion. This was achieved with only using addition to achieve the same effect as m times n. When wrtiting a recursive function it is vital to write a base case, that is a case where the recursion can stop. This will in turn make sure that the computer does have a command which will stop it from continuing the computation forever.
+
+This function can also be written in an if function, however a case statement was used in this example to improve readability. The base case in this example checks if one of the values is zero. The second case breaks up the equation to ask what the value would be if m was one less than itself. This will then be repeated in the recursion until it reaches zero. At that point it will be able to solve itself. 
+
+We could also use the same concept and reuse our function when creating a power function. The code of which is shown below:
+
+\begin{minted}{elixir}
+  def exp(x, n) do
+    case n do
+      0 -> 1
+      1 -> x
+      n -> product(n, exp(n,x-1))
+  end
+\end{minted}
+
+In case it is not clear this function calculated x to the power of n. We start by creating a case for when n is 0 and 1 since those will always have the same output, 1 and x respectively. The second step is to create a case for when n is neither of those two previous values, we can split it up in the following way:
+
+Since \begin{equation}x^n\end{equation} is a simplified way to calculate the product of multiple, {\tt n number of}, values, {\tt x}, we can use the product function we created earlier. Since n remains the same, as we need to find the value of \begin{equation}x^n-1\end{equation}. We then reuse this equation in a similar way to what we did with the product function and we eventually have our answer.
+
+\end{document}
