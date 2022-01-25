@@ -5,7 +5,7 @@
 ## What is the focus of this course?
 
 ## What technologies were used?
-Java
+Elixir
 
 ## What we’re the biggest challenges?
 
