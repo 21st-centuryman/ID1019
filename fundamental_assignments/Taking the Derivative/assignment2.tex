@@ -1,0 +1,128 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+\begin{document}
+
+\title{
+    \textbf{Taking the derivative}
+}
+\author{Alexander Berg}
+\date{Spring Term 2022}
+
+\maketitle
+
+\section*{Introduction}
+
+For this second assignment in Programming II, the author was tasked with creating a simple program which would derive a mathematical function given and output a simplified version of the derivative of said function. 
+
+In order to respect the size constrains by the teacher, assumptions will be made that the reader of this document is familiar with basic rules of differentiation.
+
+\section*{The basic structure of functions}
+
+Firstly the author had to break down how the functions should be structured. Instead of having a string the author choose to structure it using a tuples, of length l of 3, having the first item be a atom to classify whether it is a addition or multiplication, shown below:
+
+\begin{minted}{elixir}
+  ((x^(3)) + 4)
+  # This will be rewritten as:
+  {:add, {:exp, {:var, :x}, {:num, 3}},{:num, 4}}
+\end{minted}
+
+We also decided we would work with a total of 2 literal types and 3 expressions, number, variable, addition, multiplication, and exponent, respectively.
+
+\section*{Derive function}
+
+Next up would be the task to create a derivative function which would derive the given function (tuple). This task would be split into 6 different functions, each handling a rule of differentiation, such as power rule, constant rule, product rule, etc. The code for the product rule is shown below:
+
+\begin{minted}{elixir}
+ def deriv({:mul, e1, e2}, v) do
+    {:add,
+      {:mul, deriv(e1, v), e2},
+      {:mul, e1, deriv(e2, v)}}
+  end
+\end{minted}
+
+This effectively splits up the task to look eerily similar to the equation many high school students would find in a text book. This makes the equation easier to read and understand from a mathematical standpoint, however you might still ask what would occur with the recursive derive function inside the output. 
+
+Well this recursion equation is one step of many and in differentiation only three (that the author is familiar with) where the output is a single digit and doesn't require further derivation. An example of which is the constant rule shown below:
+
+\begin{minted}{elixir}
+ def deriv({:num, _}, _) do {:num, 0} end
+ def deriv({:var, _}, _) do {:num, 0} end
+\end{minted}
+
+The constant rule, states that any value to the power of 1 should be equal to one. This had to be split into two functions each for the variables and numbers of our original equation. When we use these rules mentioned and we run the program we get the following results:
+
+\begin{minted}{elixir}
+  # Input
+  {:add,{:mul, {:num, 2}, {:var, :x}},{:num, 4}}
+
+  # Output
+  {:add, 
+    {:add, {:mul, {:num, 0}, {:var, :x}}, {:mul, {:num, 2}, {:num, 1}}},
+    {:num, 0}}
+\end{minted}
+
+\section*{Simplification}
+
+The issue with the derivative function, as shown above, would be that the output is still represented as a tuple, which makes the resulting function hard to read and messy for the user. The solution for this would be to create a function which simplifies the tuple first, such as eliminating zeros or variables multiplied by one, then run this output into a function to create a equation similar to one shown before. Lets continue with our multiplication example and create the following function:
+
+\begin{minted}{elixir}
+  def simplify_mul({:num, m}, e2) do
+    case m do
+      0 -> 0
+      1 -> e2
+  end
+  def simplify_mul(e1, {:num, m}) do
+    case m do
+      0 -> 0
+      1 -> e1
+  end
+\end{minted}
+
+Here the author used two functions, each being very similar to each other. These functions check whether the product is multiplied with 1 or 0. These equations could possibly be merge in a future iteration of this report, however the author was not successful in this endeavour, and had therefore to split them up.
+
+However this output can then be used to create a function which would help the readability of the function. Firstly each variable and number had to be represented as a string since the nature of recursion would always land on one value eventually. In order to create a string of a value {\tt #{x}} has to be used, an example of which is shown below:
+
+\begin{minted}{elixir}
+  def pprint({:num, n}) do "#{n}" end
+  def pprint({:var, v}) do "#{v}" end
+\end{minted}
+
+This would later allow the author to create functions which could use recursion to simplify these equations, to continue the explaining of the power rule, here is the function created for that purpose:
+
+\begin{minted}{elixir}
+  def pprint({:mul, e1, e2}) do 
+    "(#{pprint(e1)} * #{pprint(e2)})" 
+  end
+\end{minted}
+
+Here the {\tt #{pprint(x)}} is called recursively in the string, which allows the program to build up each value as it arrives. There is however one problem with this solution, and it is regarding the danger of equations that are called not being represented in the proper matter, an example of which is how {\tt 2 * 3+ 5 } should maybe have been written as {\tt 2 * (3 + 5)}. This can be solved with all functions if a simple parenthesis are put around the equation, which the author accounted for in all the rules used. 
+
+Using this {\tt pprint} and {\tt simplify} we can create both before and after derivatives representations for our program, shown below:
+
+
+\begin{minted}{elixir}
+  # Input
+  {:add,{:mul, {:num, 2}, {:var, :x}},{:num, 4}}
+
+  # Output
+  Your input: {:add,{:mul, {:num, 2}, {:var, :x}},{:num, 4}}
+  simplified: ((2 * x) + 4)
+
+  Your Output: 
+  {:add, 
+      {:add, {:mul, {:num, 0}, {:var, :x}}, {:mul, {:num, 2}, {:num, 1}}}, 
+      {:num, 0}}
+  
+  pprint: (((0 * x) + (2 * 1)) + 0)
+  simplified: 2
+\end{minted}
+
+\section*{Conslusion}
+
+This task proved to the author the reason why many use functional programing and recursion: Each of these equations could be represented in the appropriate matter without having to explain or comment on the code for the next developer. The introduction of tupils was also very confusing at first, however this task gave a great example where tupils shine over normal lists. 
+
+\end{document}
