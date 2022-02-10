@@ -1,0 +1,87 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+\begin{document}
+
+\title{
+    \textbf{A Meta-Interpreter}
+}
+\author{Alexander Berg}
+\date{Spring Term 2022}
+
+\maketitle
+
+\section*{Introduction}
+
+For the fifth lab exercise, and the first advanced one, of this course the author was told to create a program which interprets a elixir code and returns the appropriate solution, if the code follows certain criteria explained later.
+In order to achieve this the following three modules were created: Eager, Environment (env), and program (prgm). All of which will be explained further in this report.
+
+\section*{Eager}
+
+For our first program, Eager, we are told to evaluate an expression. We do this in multiple ways by splitting up the evaluation to matching, expressions, or a list of expressions, just to name a few. As an example we use the {\tt eval\_match} which mathes our pattern and structure using an input of our environment (discussed later), id (our current value), and str (our data structure), shown below:
+
+\begin{minted}{elixir}
+  def eval_match({:var, id}, str, {:env, env}) do
+    case Env.lookup(id, {:env, env}) do
+      nil ->
+	      {:ok,
+	      Env.add(id, str, {:env, env})}
+	
+      {^id, ^str} ->
+	      {:ok, {:env, env}}
+	
+      {_, _} ->
+	      :fail
+    end
+  end
+\end{minted}
+
+This snippet of code is specifically concerned with variables and tries to match this with a structure using {\tt Env.lookup}. In a nutshell {\tt Env.lookup} gets the value of id within our structure. If the value returned is empty, meaning there is something broken with our {\tt Env.lookup}, {\tt :fail} will be thrown, if this value is bound or nil, it will throw {\tt :ok} and call the function {\tt Env.add} which returns an environment after having added both the variable {\tt id} and the structure {\tt str}. If it does not return neither, i.e. our original values are returned, it will return {\tt :ok} and continue with our current environment. The reason why the lookup function will return nil or the original value will be discussed below:
+
+\section*{Environment}
+
+The environment on the other hand, maps from variables to data structures. It consist of a single tuple using {\tt Map} to add values and edit values. The environment requires four types of functions to operate, add, lookup (both of which has been explained and will be explained further), new, and remove. In order to continue with the code explained earlier, below we have both the function for add and lookup:
+
+\begin{minted}{elixir}
+  def add(id, str, {:env, env}) do
+    {:env, Map.put(env, id, str)}
+  end
+  
+  def lookup(id, {:env, env}) do
+    case Map.get(env, id) do
+      nil -> nil
+      val -> {id, val}
+    end
+  end
+\end{minted}
+
+The {\tt add} function takes a simple input of {\tt str}, {\tt id}, and {\tt env}, our current environment. It then adds a new value to the bottom of our environment tuple using {\tt Map.put}, which puts the given value, {\tt str}, under key, {\tt id}, in map, {\tt env}. 
+
+Next up the {\tt lookup} function works similarly using a {\tt Map.get} function. It takes an input of id and environment and uses the function to get the value of id in environment. If no such value exist in environment, nil is called and returns itself. Otherwise the original value of {\tt id} and {\tt env} (val in this case) is returned. Making our environment not be modified by our later functions.
+
+\section*{Program}
+The last module we created, program (Prgm), runs our actual code we created before. It contains our code {\tt seq} and calls a function inside Eager called {\tt eval\_seq} which evaluates our {\tt seq} value and creates a new environment to solve it accordingly. This is then continued inside our Eager module.
+
+\section*{Extensions}
+While explaining this code the author failed to show much code using a case and/or lambda expression. In a nutshell case evaluates clauses and lambda is an anonymous function consisting of parameter variables, free variables and sequence expressions. A simple example of hwo we can implement such an expression is below:
+
+\begin{minted}{elixir}
+  def eval_expr({:case, expr, cls}, env) do
+    case eval_expr(expr, env) do
+      :error ->
+        :error
+      {:ok, str} ->
+        eval_cls(cls, str, env)
+  end
+end
+\end{minted}
+
+Here we use a case expression to evaluate our expression. We take in three inputs (excluding {\tt :case}), {\tt env} (our environment), {\tt expr} (our expression), and {\tt cls} (our clause). This is then recursively calling {\tt eval\_expr} again to see if the expression has a value i.e. returns its normal values or not, return {\tt :error}. If the normal values are called we call the function {\tt eval\_cls} which selects the right clause and continue the execution.
+
+\section*{Conclusion}
+This assignment helped explain to the author the fundamentals of operational semantics and how very basic Interpreters work. This report was one of the more difficult so far as there was plenty of terms and concepts which the author was not familiar with, which lead to extensive research and reading about these ideas. With that being said this assignment will most likely prove to have been useful in future assignments.
+
+\end{document}
