@@ -1,0 +1,144 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+\begin{document}
+
+\title{
+    \textbf{MIPS - Emulator}
+}
+\author{Alexander Berg}
+\date{Spring Term 2022}
+
+\maketitle
+
+\section*{Introduction}
+
+For the first passing required assignment in Programming II, the author was tasked with creating a simple program would act as an emulator for the MIPS assembly language.
+
+The model was split into five sections, each of which will be discussed further in this report.
+
+\section*{Program}
+
+The purpose of the program was to create code segments based on input, the author has a total of 9 MIPS instructions, represented as atoms, which will be written in tuples for this programs input, an example of the input is as following:
+
+\begin{minted}{elixir}
+   [{:add, 3, 1, 2},      # $3 <- $1 + $2
+    {:sub, 4, 4, 5},      # $4 <- $4 - $5
+    {:addi, 1, 0, 10},    # $1 <- 10 
+    {:lw, 4, 0, 7},       # $4 <- mem[0+7]
+    {:sw, 3, 0, 7},       # mem[0 + 7] <- $3
+    {:bne, 4, 0, -3},     # branch if not equal
+    {:beq, 3, 2, -5},     # branch if equal 
+    {:out, 4},            # out $4
+    {:halt}]
+\end{minted}
+
+This was then used during the first function of this part of the program, which will basically split up the program from a list to a tuple which will then be used by the read function to read individual values as shown below:
+
+\begin{minted}{elixir}
+  def read({:code, code}, pc) do
+    elem(code, pc)
+  end
+\end{minted}
+
+This will pick out an individual tuples and read the value of {\tt pc} which acts as the index of this program using an elem function, please note that in normal MIPS the {\tt pc} would only increase by four values, this was not something that was accounted for.
+
+Note: the author also tried to use another atom which would represent the labels which might be seen in code shown below:
+
+\begin{minted}{elixir}
+  {:Label, :Loop}
+\end{minted}
+
+This would be used instead of the integer value seen in the branching instructions ({\tt bne},{\tt bqe}) shown previously. However the author found the read and write process difficult to find an atom and read its corresponding value, a process that might be added at a later time.
+
+\section*{Registers}
+
+In order for the program to work we need the registers to be able to save and modify values. In MIPS architecture we have a total of 32 registers, with register 0 always being zero. We can therefore call a function which generates a tuple of length 32 for our code and read/write functions to edit it. With this in mind the author created the following functions:
+
+\begin{minted}{elixir}
+  def read(  _, 0) do 0 end
+  def read(registers, i) do elem(registers, i) end
+
+  def write(registers, 0, _) do registers end
+  def write(registers, i, n) do put_elem(registers, i, n) end
+\end{minted}
+
+As mentioned before the register 0 will always be zero, this means that our read function has to return 0 at all times and our write to the 0th register has to return our registers unedited. The read function uses elem which gets an element at the zero based index, it takes an input of i and registers where registers is our full list of registers we generated earlier. The write function uses a similar function, put\_elem. Similarly it takes an input of registers and i, but also an input of value (n). This will override the value inside the register and replace it with n.
+
+\section*{Memory}
+
+We create the memory in a similar fashion to that of the registers. We start by creating a tuple with a maximum amount of integer values, let's say it's 32 for this program. We then use similar functions to that of registers without the constraints, the result of this code is shown below:
+
+\begin{minted}{elixir}
+  def new() do
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+  end
+  def read( memory, i) do elem(memory, i) end  
+  def write(memory, i, n) do put_elem(memory, i, n) end
+\end{minted}
+
+Note that the constraints used in the previous part is not active here which means that there could only exist one write and read function. Also note that there is not a function which checks for errors, this was created since the author made the assumption that the code would be bug free. Future renditions of this program might have a function that accounts for this.
+
+\section*{Output}
+
+The output of this program was suppose to collect a list of intergers of the execution and return the intergers as a list. Since part of the output was already written in the paper we could assume that there would be no more than about 3 as close, new and put is about the functions required for this task, shown below:
+
+\begin{minted}{elixir}
+  def new() do [] end
+  def put(out, n) do [n|out] end
+  def close(out) do IO.inspect(out) end
+\end{minted}
+
+The first function {\tt Out.new()} will call a simple empty list for the intergers that will added later. 
+The second function {\tt Out.put} takes a simple input n which is the value of a register which will be added to this list, and out is the list where this value is added. the brackets [] tells the system to add the value of n before the entire list. This is added since the code provided updates the value of out using this function. 
+Lastly the close function returns the values of the output using an {\tt IO.inspect} which inspects and writes the given data, which in this case is our entire list.
+
+\section*{Emulator}
+
+Part of the emulator program came as pre-written for this assignment, therefore this structure was expanded upon and only two functions, both named run, was used in the program.
+
+The first run function was not so much expanded as it took an input of program and initialized the run, generating new registers, output, and memory (the latter was added by the auhtor). This function then calls the other run function giving it an input of said generated values and program. 
+
+The second run function takes in the code and does the processing of the work. We start by calling Program.read\_instruction and give it our code and program counter, pc (which determines the line we are reading in the code). This gives us one line of code which we use in a case switch statement to execute the line of code. These executions can be categorized in 3 ways, write to registers, read/write memory, and branch. However branch does also use registers, as is shown below with {\tt beq}, branch if equal:
+
+\begin{minted}{elixir}
+  {:beq, rs, rt, offset} ->
+    if Register.read(reg, rs) == Register.read(reg,rt) do
+      pc = pc+offset-1
+    end
+    run(pc+1, code, reg, mem, out)
+\end{minted}
+
+What a branch instruction does is that it updates the program counter to execute an earlier or later line of code instead of the next code in the program. In an {\tt beq} we only branch if the two variables given are equal. We find the value of these registers by calling {\tt Register.read} and giving it an input of our tuple of total registers and our given register. This value is then compared with the value of the other register, if these values are the same we update the value of {\tt pc} by adding offset and subtracting 1. The reason we subtract one is to account for our last line in our program, which is to recursively call run and add 1, which would read the next line of code in our program. We also use a similar process with our registers for our load word:
+
+\begin{minted}{elixir}
+  {:lw, rd, rs, imm} ->
+	  value = Memory.read(mem, (Register.read(reg, rs) + imm))
+	  reg = Register.write(reg, rd, value)
+	  run(pc+1, code, reg, mem, out)
+\end{minted}
+
+Here we first call value which reads the memory of {\tt Register.read(reg, rs) + imm} it also takes an input of {\tt mem} which is our memory generated at the start of this run. This is then used by the {\tt Register.write} function to write the data to the rd register by taking an input of our total registers, our target register and the value which we took from our memory. We later call run similarly to {\tt beq}.
+
+Eventually while our program runs, we will reach two executions which would be outside our category. These are {\tt :out} for output and {\tt :halt} for finishing our program. Halt only calls the function {\tt out.close} (and is the only instruction that does not call run) which was discussed earlier, however output will be discusses below:
+
+\begin{minted}{elixir}
+  {:out, rs} ->
+    pc = pc + 1
+    s = Register.read(reg, rs)
+    out = Out.put(out, s)
+    run(pc, code, reg, mem, out)
+\end{minted}
+
+For this last function we call out and writes to the output list of the given register {\tt s}. The out variable, which is output list we created along with our registers, is updated to make us able to print the new values in our last instruction {\tt :halt}.
+
+Note: even thought this code was taken mostly from the instructions, the pc was changed to adding 1 instead of 4.
+
+\section*{Conclusion}
+
+This was by far one of the more difficult assignments the author has had in a while. The memory section proved to be the most confusing part as it was assumed these values would be saved outside the program for future runs. If {\tt sw} or {\tt lw} commands were not used this program would be on par with the difficulty of previous assignments, or at least if the author did not confuse himself with assumptions.
+
+\end{document}
