@@ -1,0 +1,73 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+\begin{document}
+
+\title{
+    \textbf{Mandelbrott image}
+}
+\author{Alexander Berg}
+\date{Spring Term 2022}
+
+\maketitle
+
+\section*{Introduction}
+
+For the tenth assignment in the programming 2 course. The author was instructed to create an elixir program that would generate an image of a Mandelbrot set, a set of complex values in a plane orbiting a critical point. Mandelbrot when modeled is a fractal, meaning it is a geometric shape containing detailed structure at arbitrarily small scales. The Mandelbrot set is by far the most popular of these fractals defined by its function of: \[f(z)=z^2 + c\] Where c is a set of complex numbers, we will discuss this later in further sections of this report. Our program was split into two parts, one for the Mandelbrot set and one for the generation of our image.
+
+\section*{Mandelbrot}
+
+For the Mandelbrot set, we needed to create a function that would calculate a certain amount of iterations for a Mandelbrot set that belongs to a value {\tt i}.In order to do this we create a function {\tt Mandelbrot} which uses mathematical functions to calculate, for example: the square of a number, or its absolute value. Below is an example of our Mandelbrot and test function.
+
+\begin{minted}{elixir}
+
+    def mandelbrot(c, m) do
+        z0 = Cmplx.new(0, 0)
+        i = 0
+        test(i, z0, c, m)
+    end
+    def test(i, z, c, m) do
+        cond do
+        Cmplx.abs(z) > 2 -> i
+        true -> test(i + 1, Cmplx.add(Cmplx.sqr(z), c), c, m)
+        end
+    end
+\end{minted}
+
+Our Mandelbrot set takes in two inputs of a complex number and a number of iterations (what we will call depth in future functions). It then uses these values to create a tuple {\tt z0} and an int {\tt i} which is the current number of iterations in our program. This is then sent to our test function. Note that we are missing a test function which simply returns 0 when the total number of iterations is the same as the current number of iterations. Otherwise our function uses a condition statement to first check if the absolute value of our tuple is over two, where in that case it will return i allowing us to note which numbers are not part of the set, which will help with our color model later. Otherwise we run our tests once again increasing our current iteration by one and getting the next value of our Mandelbrot set by adding the square of our current value with our complex number, which is the definition of the Mandelbrot set explained earlier.
+
+\section*{Creating PPM file}
+
+The other part of our program would be the creation of {\tt .ppm} file. A big part of this file consists of writing and building the rows for our file, it uses functions also from other modules such as our color. Since a bit of the code used in the {\tt ppm} module is given by the teacher, the code below shows our convert function, which helps us create our color palate for our image:
+
+\begin{minted}{elixir}
+
+    def convert(depth, max) do
+        f = depth/max
+        a = 4*f
+        x = trunc(a)
+        y = trunc(255 * (a - x))
+        case x do
+            0 -> {:rgb, 0, 0, y}
+            1 -> {:rgb, 0, y, 255}
+            2 -> {:rgb, 0, 255, 255-y}
+            3 -> {:rgb, 255, 255, y}
+            4 -> {:rgb, 0, 0, 0}
+        end
+    end
+
+\end{minted}
+
+The purpose of this function is to create tuples with instructions for our program to put a certain value of {\tt RGB} on a pixel. It does this by using two inputs of depth and max. Depth is our iteration as explained previously, and max is our maximum possible depth. we can use this to create our other variables which we need for our case statement. Firstly we create a variable {\tt f} which is our fraction of depth to maximum. We then multiply this value by 4 to give our colors a possibility of 4 different shades. We could obviously increase this amount to create a more vibrant image. We then use a {\tt trunc} function which simplifies our number and returns the integer part of said number. This creates a shade which we could use, however we need to still to account for the fact that {\tt RGB} values have a maximum of 255, in which case we find the difference between a and our {\tt trunc} value multiplying with our 255. We then uses {\tt trunc} to make sure we have no decimal values. Allowing us to use it in our case function. This is used in our case statement which uses our value of {\tt x} as it shows our difference without decimal places. We are then free to add whichever color we want, where 0 will be where the Mandelbrot set does not touch and 4 will be where our depth and max are equal. 
+\
+With the help of this function we were able to create the following image:
+\includegraphics[scale=1]{final.png}
+
+\section*{Conclusion}
+
+This was by far one of the most fun and exciting assignments in this course so far. Creating shapes and graphics using a program, being able to create a form of art and changing the variables to your liking is both exciting and fun. Would definitely recommend more projects like these for future students.
+
+\end{document}

@@ -1,0 +1,53 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+\begin{document}
+
+\title{
+    \textbf{Philosophers}
+}
+\author{Alexander Berg}
+\date{Spring Term 2022}
+
+\maketitle
+
+\section*{Introduction}
+
+For the last advanced project in the programming 2 course. The author was instructed to solve three problems relating to states, memory, and concurreny programming. We will split this report into three sections solving each assigned task.
+
+\section*{A chopstick}
+
+For the first task, the author was instructed to make a program which would update the state of a chopstick depending on the request message. There are three function for the two states for the chopstick, start/avaliable and gone. These states then use a request function to update the current state of the chopstick, a part of this function is shown below:
+
+CODE
+
+EXPLAIN
+
+\section*{A philosopher}
+
+The second task is much similar to that of the previous one, taking care of states however it has set times where each state is happening, such as dreaming, waiting, or eating. We are also instructed to log the times when a philosopher get a chopstick. We use multiple functions to achieve this, we can use our dreaming function and an example:
+
+\begin{minted}{elixir}
+
+\end{minted}
+
+EXPLAIN
+
+\section*{Dinner at the table}
+
+The program of our assingment combines these two tasks and make them work with eachother, making us work with timing, and minimizing deadlock. In order to achieve this we need init, start, and stop. The latter two are shown below:
+
+\begin{minted}{elixir}
+
+\end{minted}
+
+EXPLAIN
+
+\section*{Conclusion}
+
+
+
+\end{document}

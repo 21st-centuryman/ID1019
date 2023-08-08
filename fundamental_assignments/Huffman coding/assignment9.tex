@@ -1,0 +1,86 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+\begin{document}
+
+\title{
+    \textbf{Huffman}
+}
+\author{Alexander Berg}
+\date{Spring Term 2022}
+
+\maketitle
+
+\section*{Introduction}
+
+For the ninth assignment in the programming 2 course. The author was instructed to create an elixir implementation of Huffman code. A lossless compression method for single symbols, such as letters, and numbers. This report will be separated in three parts, a general overview of the code, the encoding, and the decoding method. 
+
+\section*{Huffman coding}
+
+Huffman coding works, in laymen terms, by listing the number of symbols that occur in a given input, giving them a weight by occurrence, the two lowest are then combined into one item in a tree with a fixed size (the addition of the weight of those two values). 
+In order to achieve this we need to create a couple of methods, the creation of the tree, frequency methods, and inserting values the later of which is shown partially below:
+
+\begin{minted}{elixir}
+    def insert({a, vala}, [{b, valb} | rest]) do
+    cond do
+        vala < valb -> [{a, vala}, {b, valb} | rest]
+        true -> [{b, valb} | insert({a, vala}, rest)]
+      end
+    end
+\end{minted}
+In the only function not shown returns our list and is only applicable when we have an empty list as one of our inputs.
+In our shown function we have two inputs, one tuple and one list. The tuple includes two variables, a (the symbol which we want to add to our list), {\tt vala} (The number of times this variable occurs in our text created by our earlier frequency function). We have a similar situation for our list function only that the rest of our freq list is included in rest, giving us a way we can transfer to our next value of our list. We use a {\tt cond} statement to split if our value of a is less than our value of b. If that is true we let the list remain the same as these values are sorted and can be appropriately added to our table. If the value is false we recursively call the function adding b to the beginning of the list and comparing a to the upcoming value.
+
+\section*{Encoding}
+
+In order to use our table we need to write down each value of our tree. This will be used to compress our data, using our table we created earlier. We achieve this with an encode function shown below:
+
+\begin{minted}{elixir}
+    def encode_table(tree) do
+        sort_encode(locale(tree, []), [])
+    end
+
+    def sort_encode(seq, list) do
+        case seq do
+            [] -> list
+            [h|t] -> sort_encode(t, insert_encode(h, list))
+        end
+    end
+    
+    def way({left, right}, track, n) do
+        l = way(left, [0 | track], n)
+        way(right, [1 | track], l)
+    end
+    def way(e, track, n) do
+        [{e, reverse(track, [])} | n]
+    end
+
+\end{minted}
+
+As can be seen above we use the function encode_table with an input of tree (the tree we created with earlier functions). This is then used to call sort_encode giving it an input of a locale function and an empty list. Our locale function (not shown) takes an input of our tree and an empty lists. The first empty list will be our track giving us a 1 to go right and 0 to go left. This gives us a list that we call (seq). We then use sort_encode to sort this list, we go over each value individually, if our list has a value we recursively call sort_encode again and give it an input of t and insert h into our list using insert_encode which works similarly to our insert function, with the main differences being the comparison which uses Enum.count, a function which returns the count of values inside a list. This is then repeated until we have encoded our tree.
+
+\section*{Decoding}
+
+Now when we have both our encoding and our tree we can create a decoding function that will decode our compressed message. A sample of this function is shown below:
+
+\begin{minted}{elixir}
+    def decode_char(seq, n, table) do
+        {code, rest} = Enum.split(seq, n)
+        case List.keyfind(table, code, 1) do
+            {char, _} -> {char, rest}
+            nil -> decode_char(seq, n + 1, table)
+        end
+    end
+\end{minted}
+
+This function is only used when the symbol we are looking for is a char. It has three different inputs, seq (our encoded sequence), n(a number which we will use to split the seq), and table(our Huffman table). We start by splitting the seq after the nth value, into two parts, code (which is the beginning of the seq including the nth value), and rest (the rest of the values). Please note that our first value of n will be 1 and it will grow as we decode our code so we expect the size of code to be one. The code variable will then be used in our {\tt List.keyfind} function. This takes an input of our table, the code variable we just created and 1 (which will make sure that we receive the first value where our code matches a value in our table). This will return a tuple of size 2, with our char value to the left, and the position in our table, if we have a match it will return our split, giving us a a split list with the correct char we have been searching for. If this is not true it will recursively call the function adding a 1 to our n variable, making us repeat the process for the next variable.
+
+
+\section*{Conclusion}
+
+This report really helped the author understand the fundamentals of lossless compression and showing the applications of lists, tuples, and trees, where they would both be useful in creating a program such as this one. It will most likely also help with future compression applications which the author might have to work on.
+
+\end{document}

@@ -7,7 +7,7 @@
 \begin{document}
 
 \title{
-    \textbf{Taking the derivative}
+    \textbf{Tree vs list}
 }
 \author{Alexander Berg}
 \date{Spring Term 2022}
@@ -53,8 +53,8 @@ These functions are the {\tt list\_insert} used to organize a value added to our
 \end{minted}
 
 Note that the function {\tt tail\_new} is missing as it does not concern this comparison.
-These functions can effectively be split into 2 parts, first are the first three which concern empty trees or if there is a single head (node). It will then insert the new node as the head of the tree and make the current head a "leaf", if the node is smaller than the current head the same process will ofccur with the second function. In that case
-The last function concerns all other cases and is structured similarly to our list function earlier, calling {\tt tree\_insert} recursivly comparing our new node with the rest of the nodes, starting with the root until the right place is found for the node.
+These functions can effectively be split into 2 parts, first are the first three which concern empty trees or if there is a single head (node). It will then insert the new node as the head of the tree and make the current head a "leaf", if the node is smaller than the current head the same process will occur with the second function. In that case
+The last function concerns all other cases and is structured similarly to our list function earlier, calling {\tt tree\_insert} recursively comparing our new node with the rest of the nodes, starting with the root until the right place is found for the node.
 
 \section*{Benchmarks}
 
@@ -64,26 +64,28 @@ With both a tree structure and lists explained, it is time to use the included b
   \centering
   \renewcommand{\arraystretch}{1.3}
   \begin{tabular}{ p{2cm} l l  p{5cm} } 
-      \multirow{2}{10cm}{\textbf{N}} & \multicolumn{2}{ c }{\textbf{Function [\textit{µs}]}} \\ 
+      \multirow{\textbf{Benchmark}} & \multicolumn{2}{ c }{\textbf{Function [\textit{µs}]}} \\ 
       \cline{2-3}
       & {\tt list\_insert}    & {\tt tree\_insert}  \\    
       \hline\hline
-      $2^4$    & 235          & 145      \\
-      $2^5$    & 340          & 191      \\
-      $2^6$    & 1223          & 454     \\
-      $2^7$    & 4247         & 778     \\
-      $2^8$    & 15060        & 1974     \\
-      $2^9$    & 61163        & 6809    \\
-      $2^{10}$   & 248668       & 25671    \\
-      $2^{11}$   & 1584427       & 118358    \\
-      $2^{12}$   & 5824127      & 210739   \\
-      $2^{13}$   & 24057775     & 475440   \\ [0.5ex]
+      $2^4$    & 0.235          & 0.145      \\
+      $2^5$    & 0.340          & 0.191      \\
+      $2^6$    & 1.22          & 0.454     \\
+      $2^7$    & 4.25         & 0.778     \\
+      $2^8$    & 15.1        & 1.97     \\
+      $2^9$    & 61.2       & 6.81    \\
+      $2^{10}$   & 249       & 25.7    \\
+      $2^{11}$   & 1580       & 118    \\
+      $2^{12}$   & 5820      & 211   \\
+      $2^{13}$   & 24100     & 475   \\
     \hline
   \end{tabular}
   \label{t1}
 \end{table}
 
-As can be seen in the result the differences at first are quite slim, but as time increases the differences grows. This occurs since a list is a collection of nodes where every node only refers to one neighbor. A tree structure on the other hand has the ability to refer to mulitple neighbor should that be nesseary. However it should be noted that during these test runs the numbers are randomized and it is not a given that the differences should be this vast. However we can conclude that for long lists of data a tree structure would be superior to that of lists.
+Note: The value to the left is the amount of inputs for our structures, i.e. {$2^4 = 16$}, and that these values are measured in milliseconds and rounded to three significant figures.
+
+As can be seen in the result the differences at first are quite slim, but as time increases the differences grows. This occurs since a list is a collection of nodes where every node only refers to one neighbor. A tree structure on the other hand has the ability to refer to multiple neighbor should that be necessary. However it should be noted that during these test runs the numbers are randomized and it is not a given that the differences should be this vast. However we can conclude that for long lists of data a tree structure would be superior to that of lists.
 This is not to say that lists are inferior to that of trees. Looking at the code it requires much fewer lines to write a list than that of a tree, making it suitable for small data where readability is preferred over execution time.  
 
 \section*{Conclusion}

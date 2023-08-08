@@ -1,0 +1,57 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+\begin{document}
+
+\title{
+    \textbf{You're a lumberjack, and it's OK.}
+}
+\author{Alexander Berg}
+\date{Spring Term 2022}
+
+\maketitle
+
+\section*{Introduction}
+
+
+For the next lab exercie of this course the author was told to create a program using dynamic programming, in this lab the program will cut fictional logs with a cost in mind (cost is proportional to the length of the log). A report was created which goes over the recursive solution to this problem and the author was tasked with creating a dynamic solution to the same problem. The usage of dynamic programming requires memory which is why this report will be split into two parts, the memory module and the search module.
+
+\section*{Memory}
+
+The memory
+
+\section*{Search Module}
+
+INTRO
+
+\begin{minted}{elixir}
+  def part2() do count(List.delete_at((create(example(), [])), -1), 0) end
+
+def create([], sum) do sum end
+def create([_h|[]], sum) do sum end
+def create([h|t], sum) do
+  sum = sum ++ [Enum.sum(Enum.take([h|t], 3))]
+  create(t, sum)
+end
+\end{minted}
+
+EXPLAIN
+
+\section*{Benchmark}
+
+INTRO
+
+CODE
+
+EXPLAIN
+
+\section*{Conclusion}
+
+This assignment helped introduce the concept of dynamic programming and helped understand how to apply it to already 
+
+This assignment helped introduce the idea of data manipulation and helped with understanding how it might affect the result of the problems which we try to solve. This was also a very enjoyable assignment, because of its simplicity it meant that a bigger focus was on making the data be as clean and effective as possible.
+
+\end{document}

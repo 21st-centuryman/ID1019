@@ -1,0 +1,63 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+\begin{document}
+
+\title{
+    \textbf{Train shunting}
+}
+\author{Alexander Berg}
+\date{Spring Term 2022}
+
+\maketitle
+
+\section*{Introduction}
+
+In Train shunting the author was told to create a program which would rearrange trains and wagons between 3 tracks (main, one, and two) until the desired train was osbtained on the main track. This was tackled in three parts, list, moves and shunt, all of which will be discussed further below:
+
+\section*{List module}
+
+The list module focuses on processing of the list which represents our trains and tracks. For example checks whether an element exists in a list or finding the positon of a train in the list. The latter of which was solved with a simple case statement returning as 1 if the first value is true or recursively calling the {\tt position} function, adding one to the variable {\tt pos} each call, eventually returning its position. This module will not be discussed further.
+
+\section*{Moves Module}
+
+The move module is comprised of two functions, {\tt single} and {\tt move}. Both of these functions have a similar output of returning the number of moves, a touple telling the user a move from one track to another. An example of the {\tt moves} function is shown below:
+
+\begin{minted}{elixir}
+  def move(list, states) do
+    case list do
+      [] -> [states]
+      [h|t] -> [states | move(t, single(h, states))]
+    end
+  end
+\end{minted}
+
+The function's purpose is to create a list of states based on the moves and input state. It achieves this through the usage of a case statement going over the list of moves which will be applied. If this list is empty it means that our list of moves is complete and our list of states is called. Otherwise we need to add new states to our list. Making us recursively call our move function, giving an input of {\tt t} and the {\tt single} function with an input of {\tt h} and {\tt states}. The {\tt single} function's purpose is ti return a state based on a move and an input state, meaning that our state will be updated and oru list will be added to our move function. 
+
+\section*{Shunt module}
+
+The last model of this exercise is comprised of four functions, {\tt split}, {\tt find}, {\tt few} and {\tt compress}. The {\tt split} function splits a train by removing an atom both of which are inputs for the function. {\tt Find} returns a list of moves that will transform two trains into a specified state. {\tt Few} works similarly to {\tt Find} only that it takes into account whether the next wagon is in the right position. Lastly {\tt compress} returns a compress list of moves. Below is an example of the {\tt split} function used in the program:
+
+\begin{minted}{elixir}
+  def split(list, atom) do
+    case Lists.member(list, atom) do
+        false -> IO.inspect("ERROR: given wagon is not in train")
+        true -> 
+          {
+            Lists.take(list, Lists.position(list, atom)-1),
+            Lists.drop(list, Lists.position(list, atom))
+          }
+    end
+  end
+\end{minted}
+
+The split starts by having a case statement which checks wether the wagon choosen is actually a member of the train. This can either return as false where an IO inspect will be thrown explaining to the user what went wrong. If it is returned as true it will run the rest of our {\tt list} functions, besides append, inside a tuple. The result is meant to split the list in two inside a touple, removing a stated atom. An example of which is that the input {\tt ([:a, :b, :c], :b)} becomes {\tt {[:a], [:c]}}. We start by spliting these into two problems one for returning everything of a list up to a point {\tt List.take} and the other returning the list without without the a specified first number of elements {\tt List.drop}. Both of these functions take an input of a number {\tt n} and then recursively calls itself building its list from start or {\tt n}. Therefore we need a function which will find the position of the atom which we have given {\tt split} and input of. This is achieved using the {\tt position} function. This function takes in a list and an atom, however it uses a case function, checking if the current item in the list is equal to the element given as an input, if this is true it will return 1 if it is not true it will make a recursive call, but also add one before updating the position to two instead of one. Please note that on the first {\tt position} call we subtract one to the position. That is because we want to remove the value from our list since the take will include the {\tt nth} element otherwise. 
+
+\section*{Conclusion}
+
+This lab helped the author understand lists better, how to edit/update lists, how to split up functions between multiple files, dynamic programming, and how to allocate certain tasks for certain functions to prevent making massive functions making it difficult to solve problems ahead. This was also a quite challenging assignment, or at least hard to understand at first glance.
+
+\end{document}

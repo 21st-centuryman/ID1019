@@ -1,0 +1,68 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+\begin{document}
+
+\title{
+    \textbf{Advent of code}
+}
+\author{Alexander Berg}
+\date{Spring Term 2022}
+
+\maketitle
+
+\section*{Introduction}
+
+For the eight lab exercise of this course the author was told to create a program which was able to interpret if the current value in a list is higher or lower than the current value. This was all challenges used in the advent of code challege in 2021. The solutions for this problem was tackled in two ways which will be elaborated further.
+
+\section*{Part 1}
+
+For the first part the author was told to write a simple program which would count the number of times the value increased or decreased. This was solved with two functions {\tt count} and {\tt checkIfDepth}.
+
+\begin{minted}{elixir}
+  def count([_h|[]], num) do num end
+  def count([h|t], num) do
+    num = num + checkIfDepth([h|t])
+    count(t, num)
+  end
+
+  def checkIfDepth([h|t]) do
+    if (h < hd(t)) do
+      1
+    else
+      0
+    end
+  end
+\end{minted}
+
+Note: this report does ot include times where the list is empty.
+Originally it was attempted to combine these functions so that {\tt countIfDepth} would update the value of num when the value was greater, this however proved to be more of a challenge than to constantly update the value for each run of {\tt count}. The Rest of the code is quite self explanatory. {\tt Count} updates the value of {\tt num} until the next value is empty when in that case it returns out count {\tt num}.
+
+\section*{Part 2}
+
+For the second part the task was to minimize the amount of data by instead taking the sum of three values in our list and then combine these to later compare with our previous data. This did not need any more additions or changing of our previous code, instead it only required we create a new function {\tt part 2} and {\tt create} to initalize our program and create our new list of summed values.
+
+\begin{minted}{elixir}
+  def part2() do count(List.delete_at((create(example(), [])), -1), 0) end
+
+def create([], sum) do sum end
+def create([_h|[]], sum) do sum end
+def create([h|t], sum) do
+  sum = sum ++ [Enum.sum(Enum.take([h|t], 3))]
+  create(t, sum)
+end
+\end{minted}
+
+Note that the function {\tt count} is identical to that of the previous part. 
+Here the author created the function {\tt create} which would take three values of the list and add it to a new list, called sum. It does this through the {\tt Enum.take} function which takes the three first values in a list and creates a new list with it. This is then used by {\tt Enum.sum} to sum these values and return an int. Which is lastly added to sum. This is then repeated by recursively calling {\tt create} until one of the other {\tt create} functions are called returning sum. This is then used by our {\tt count} function which takes our {\tt create} function as an input. Please not that the {\tt create} function creates one more value than would be necessary, this might be ok for our test values but not if the last value happens to be an anomaly. In order to fix this we use the {\tt List.delete_at} function with a value of -1, which will always take away the last value of our list without having to find the length, i.e. run the function recursively again. 
+
+The result of this function does create a difference between wether the value was higher or lower. Using the example list the first attempt, part 1, did have a higher amount of increases at 7 while our second attempt had only 5. However this is not a given, since in our input list (provided by the teacher) teh second attempt had more increases at 1611, while the first attempt had only 1564. Even tho these values are similar, one could easily see a situation where there might be a very large differnce between these two. Consider a high anomaly in this code, or if the instrument taking the measurement created a false value. In the first attempt this is only considered once, however in the second attempt this is used in our simplification method for three of our values. This could easily make the data less accurate if errors like these are presistent. Meaning that the act of simplification or rounding up data might not be the best coiurse of action in most cases.
+
+\section*{Conclusion}
+
+This assignment helped introduce the idea of data manipulation and helped with understanding how it might affect the result of the problems which we try to solve. This was also a very enjoyable assignment, because of its simplicity it meant that a bigger focus was on making the data be as clean and effective as possible.
+
+\end{document}

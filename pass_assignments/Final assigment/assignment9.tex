@@ -1,0 +1,89 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+\begin{document}
+
+\title{
+    \textbf{Last assignment}
+}
+\author{Alexander Berg}
+\date{Spring Term 2022}
+
+\maketitle
+
+\section*{Introduction}
+
+For the last assignment in the programming 2 course. The author was instructed to create an elixir implementation of Morse code, similarly to the Huffman coding in earlier reports. This report will be separated in two parts, the encoding, and the decoding method. 
+
+\section*{Encoding module}
+
+In the assignment we were given a tree giving us a map similar to a Huffman tree allowing us to decode and encode. We need to create an {\tt encode\_table} function to be able to create a list of ASCII numbers and the resulting string. Using this we create a function {\tt encode\_lookup} to find what string to give a value of a char. We also have a function {\tt codes} which navigates our tree for a value. Below we have a collection of encode functions which we will explain in more detail:
+
+\begin{minted}{elixir}
+    def encode([char|text], table) do
+        encode_lookup(char, table)  ++ [32] ++ encode(text, table)
+    end
+
+    def encode_table() do
+        codes = codes(morse(), [])
+        Enum.reduce(codes, %{}, fn({char, code}, acc) ->
+            Map.put(acc, char, code) end)
+    end
+
+    def encode_lookup(char, map) do Map.get(map, char) end
+\end{minted}
+
+Please note that we are missing some functions, such as {\tt encode} which takes in a single input of text, initializing our text, or {\tt encode} returning an empty list if the text is empty.
+The encode functions takes an input of our text and our table, it then call {\tt encode\_lookup} to find the encode in our table using a {\tt Map.get} function. This is then added with and array of a single value of 32, {\tt [32]}, creating a space bar. We then recursively call encode and continue our process for the rest of our array. Before all of this, when we initialize our code, we call the function {\tt encode\_table}. In this function we call {\tt codes} function, which navigates our list to return a table. This is then used in our {\tt Enum.reduce} function which uses our codes variable, an empty tuple, and a function (which puts a value under a given key in {\tt acc}). This will return our table which we use in our encode values.
+
+Using this code we can solve for the following example encoding the author's name.
+
+\begin{minted}{elixir}
+    > Morse.encode('alexander berg')
+    '.- .-.. . -..- .- -. -.. . .-. ..-- -... . .-. --. '
+\end{minted}
+
+\section*{Decoding}
+
+In the other module we focus on decoding a string of morse code, similarly to our result in the previous section. We can solve this similarly in structure to our previous module, using a {\tt decode\_table} function, {\tt decode\_char}, and {\tt decode} functions, which decodes our tree, our char, and initializes our program respectively.
+
+An example of {\tt decode\_char} is shown below:
+
+\begin{minted}{elixir}
+    def decode_char([?-|signal], {:node, _, long, _}) do
+      decode_char(signal, long)
+    end
+
+    def decode_char([?.| signal], {:node, _,_, short}) do
+      decode_char(signal,short)
+    end
+  
+    def decode_char([?\s|signal], {:node,:na , _, _ }) do
+    {?*,signal}
+    end
+    def decode_char([?\s|signal], {:node,char , _, _ }) do
+      {char,signal}
+    end
+\end{minted}
+
+Note that the first module has been removed since it only returns the appropriate char if the first input is empty. The {\tt decode\_char} function deals with handeling the table we created earlier. It takes the text provided for it and checks wether the first character is a point, a dash, or space. It then checks the properities of the table. If the table is long it means that the first morse code signal is a long one, on the other side if it is short it means that singal is short. This is then returned recursively until we reach the first function. The last two values are :na, when the character has no coresponding code, (in which case {\tt ?*} is given which will allow us to have a space in its place), and char, if there is a character in the table, returning said character. 
+
+Using our functions we are able to decode messages shown in the report. 
+\begin{minted}{elixir}
+    iex(1)> Morse.decode(text1())
+    'all your base are belong to us'
+
+    iex(1)> Morse.decode(text2())
+    'https://www.youtube.com/watch?v=d%51w4w9%57g%58c%51'
+\end{minted}
+
+ps. I am not showing a picture of that link. I take back all the good I said in the conclusion.
+
+\section*{Conclusion}
+
+As a last assignment this was very relaxing, especially since the author only had a day to solve it. This has by far been a very helpful and entertaining course. Thank you.
+
+\end{document}

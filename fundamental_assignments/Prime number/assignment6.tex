@@ -1,0 +1,121 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+\begin{document}
+
+\title{
+    \textbf{Prime Numbers}
+}
+\author{Alexander Berg}
+\date{Spring Term 2022}
+
+\maketitle
+
+\section*{Introduction}
+
+For the sixth lab exercise of this course the author was told to create a program which returns a list of prime numbers from 2 to a number p. This was achieved with three solutions (or tasks) and will be compared at the end of this report using a benchmark.
+
+\section*{Task 1}
+
+For the first task we were tasked with creating a list of all whole numbers from 2 to n. We are then instructed to remove all whole numbers that is divisible by the first wholenumber in this list. This is then repeated until the entire list only consist of prime numbers, the resulting code for this is shown below:
+
+\begin{minted}{elixir}
+  def new(n) do
+      [h|t] = Enum.to_list(2..n)
+      [h|rmv(h, t)]
+  end
+
+  def rmv(x, []) do [] end
+  def rmv(x, [h|t]) do
+    [h|rmv(h, Enum.filter(t, fn p -> rem(p, x) != 0 end))]
+  end
+\end{minted}
+
+This task is quite simple and is made up of two functions {\tt new} and {\tt rmv}. The new function initializes the program, later calling the {\tt rmv} function of the next value in the list, as the first value {\tt 2} is prime. The function then checks if the value after is prime. It uses the {\tt Enum.filter} function which returns only the truthy values. We then combine this with a function {\tt fn p} to check if the value of x, or as we input {\tt h}, is prime in our list t. This is then repeated until we have a list with only primes.
+
+\section*{Task 2}
+
+For the second task we are tasked with creating a similar list to that of task 1, however we are also tasked with creating a second list which would /////. We achieved this by splitting our functions into the following tasks, {\tt new} (creates our list), {\tt isPrime} (checks if the number is prime), and {\tt addPrime} (adds our prime to our list). Since some of these are quite self explanatory, we will discuss {\tt addPrime}, and our {\tt new} functions, the reason why will be explained in the next section.
+
+\begin{minted}{elixir}
+
+  def new(list, primes) do
+    case list do
+      [] -> primes
+      [h|t] ->
+        primes = addPrime(list, h, primes)
+        new(t, primes)
+    end
+  end
+
+  def addPrime(list, x, primes) do
+    case isPrime(list, primes) do
+        true -> primes ++ [x]
+        false -> primes
+    end
+  end
+\end{minted}
+
+Note that we initialize the list similarly to that of 1, however we use this to call the {\tt new} function shown above, giving it our list and an empty list for our primes.
+
+In this example we use {\tt new} to add primes by checking the status of list, checking if it is empty as each run removes one value of the list in the input. If it is false we return our list of primes. If it is true we call our {\tt addPrime} function which checks the validity of the input {\tt h}, our current value we are checking. This function, {\tt isPrime} tries to divide our value {\tt primes} with the rest of our list and gives us a Boolean output. If this value is true we add it to the beginning of our primes list. If it is false we return our primes, we continue this process until we have reached every single number for our list.
+
+\section*{Task 3}
+The third task is very similar to that of the second one, with the only exception being that we put the value in the list directly and at the end of the execution we flip the list. This means that the functions we explained previously will be the only functions relevant to the third task, allowing us to compare and contrast. A snippet of the code for task 3 is shown below:
+
+\begin{minted}{elixir}
+  def new(list, primes) do
+    case list do
+      [] -> Enum.reverse(primes)
+      [h|t] ->
+          primes = addPrime(list, h, primes)
+          new(t, primes)
+    end
+  end
+
+  def addPrime(list, x, primes) do
+    case isPrime(list, primes) do
+      true -> [x] ++ primes
+      false -> primes
+    end
+  end
+\end{minted}
+
+In order to avoid repeating ourselves we will just go over the differences between these and task 2. Starting with {\tt addPrime} we have changed our true state where we add the primes to the end of the list instead of the start. In our {\tt new} function the {\tt Enum.reverse} is added {\tt new} for when we print out the primes, this is necessary since we rewrote our list to add values to the end.
+
+\section*{Bench}
+Now with all of these solutions explained, we can run a benchmark to see the time it takes for them to find all prime numbers of a given size n in milliseconds, the result of said benchmark is below:
+
+\begin{table}[h]
+  \centering
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{ p{2cm} l l l p{6cm} } 
+      \multirow{\textbf{Bench}} & \multicolumn{3}{ c }{\textbf{Tasks}} \\ 
+      \cline{2-4}
+      & {\tt 1}    & {\tt 2} & {\tt 3}  \\    
+      \hline\hline
+      $10$ & 0.006 & 0.005 & 0.005 \\
+      $50$ & 0.016 & 0.022 & 0.013 \\
+      $100$  & 0.025 & 0.018 & 0.037 \\
+      $300$  & 0.174 & 0.125 & 0.265 \\
+      $500$ & 0.238 & 0.179 & 0.453 \\
+      $1000$ & 0.717 & 0.603 & 1.90 \\
+      $5000$ & 8.94 & 5.34 & 23.0 \\
+      $10000$ & 26.6 & 15.6 & 81.1 \\
+    \hline
+  \end{tabular}
+  \label{t1}
+\end{table}
+
+Note: Each run is run individually, meaning a loop was not created. This might affect the execution time of the code. Also the execution time does fluctuate based on the run, the overall differences remains the same, however the size of the differences could differ.
+
+These results showed something the author was not expecting, that is the differences between task one and three. Since task 3 adds values to the end of the list of primes and has to print out the values in reverse order, it was expected that this value would be slower than that of the second task. However it was not expected that the first task would be quite close to the second value in execution time. Since the second task builds a new list and does not remove values from one list it would most likely be faster, however that also does depend on how this code is written. Having a good structure in your code might be more beneficial than the underlying structure. 
+
+\section*{Conclusion}
+
+This task was quite an eye opener for the author. Usually as students we are discussing big O notation and the execution time of tasks. However very rarely do we discuss the implementation problems that could arise from having a poorly implemented code. As a matter of fact you might even see more poor performance than the original code you wrote.
+
+\end{document}
